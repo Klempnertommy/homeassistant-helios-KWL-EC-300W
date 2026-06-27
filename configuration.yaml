@@ -1,5 +1,6 @@
 automation: !include automations.yaml
 
+
 command_line:
   - sensor:
       name: "KWL Temperatur nach Heizregister"
@@ -9,21 +10,15 @@ command_line:
       device_class: temperature
       state_class: measurement
       value_template: >
-        {# Schranke: Reagiere NUR, wenn das Paket wirklich fuer den T6-Fuehler bestimmt ist #}
         {% if '=' in value and 'v00146' in value %}
-          {{ (value.split('=')[1] | replace(' ', '')) | float(none) }}
+          {{ (value.split('=')[1] | replace(' ', '')) | float(20.0) }}
         {% else %}
-          {# Ignoriere Fremdpakete komplett und behalte den echten alten Temperaturwert #}
-          {{ states('sensor.kwl_temperatur_nach_heizregister') }}
+          {% set alter_wert = states('sensor.kwl_temperatur_nach_heizregister') %}
+          {{ alter_wert if alter_wert not in ['unknown', 'unavailable'] else 20.0 }}
         {% endif %}
       scan_interval: 30
 
 shell_command:
-  # 1. WERKSEINSTELLUNG (Helios-Auto) -> Übergibt der Helios fest Ihre 23 Grad Wohlfühltemperatur
   kwl_bypass_auto: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=23"
-
-  # 2. AUF (Wird von der HA-Kühl-Logik oder Zwangsschaltung genutzt)
   kwl_bypass_auf: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=10"
-
-  # 3. ZU (Wird von der HA-Heiz-Logik oder Zwangsschaltung genutzt)
-  kwl_bypass_zu: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=40"
+  kwl_bypass_zu: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=40
