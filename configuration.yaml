@@ -1,6 +1,5 @@
 automation: !include automations.yaml
 
-
 command_line:
   - sensor:
       name: "KWL Temperatur nach Heizregister"
@@ -11,14 +10,15 @@ command_line:
       state_class: measurement
       value_template: >
         {% if '=' in value and 'v00146' in value %}
-          {{ (value.split('=')[1] | replace(' ', '')) | float(20.0) }}
+          {% set teile = value.split('=') %}
+          {{ teile[1].replace(' ', '') | float(None) }}
         {% else %}
           {% set alter_wert = states('sensor.kwl_temperatur_nach_heizregister') %}
-          {{ alter_wert if alter_wert not in ['unknown', 'unavailable'] else 20.0 }}
+          {{ alter_wert if alter_wert not in ['unknown', 'unavailable'] else None }}
         {% endif %}
       scan_interval: 30
 
 shell_command:
   kwl_bypass_auto: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=23"
   kwl_bypass_auf: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=10"
-  kwl_bypass_zu: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=40
+  kwl_bypass_zu: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=40"
