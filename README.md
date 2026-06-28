@@ -32,8 +32,26 @@ Da die Helios-Firmware V2 über das Netzwerk Text-Strings (z. B. `"v01035=18\0"`
 
 ### 2. Die Home Assistant Helfer (Input-Elemente) anlegen
 Bevor du die YAML-Dateien einspielst, müssen in Home Assistant über die Benutzeroberfläche (**Einstellungen -> Geräte & Dienste -> Helfer -> + Helfer erstellen**) folgende Elemente angelegt werden:
+### 2. Die Home Assistant Helfer (Input-Elemente) anlegen
+Bevor du die YAML-Dateien einspielst, müssen in Home Assistant über die Benutzeroberfläche (**Einstellungen -> Geräte & Dienste -> Helfer -> + Helfer erstellen**) folgende Elemente angelegt werden:
 
-1. **Dropdown (Input Select):**
+1. **Dropdown (Input Select) für den globalen Modus:**
+   * **Name:** `KWL Globale Kontrolle`
+   * **Entitäts-ID:** `input_select.kwl_globaler_modus`
+   * **Optionen (Exakte Schreibweise!):**
+     * `Gerät entscheidet alles (Auto)`
+     * `HA übernimmt die Macht (Hand)`
+
+2. **Dropdown (Input Select) für die Lüfterstufen:**
+   * **Name:** `Manuelle Lüfterstufe`
+   * **Entitäts-ID:** `input_select.kwl_luefterstufe_auswahl`
+   * **Optionen (Exakte Schreibweise!):**
+     * `Stufe 1 (Minimal)`
+     * `Stufe 2 (Normal)`
+     * `Stufe 3 (Erhöht)`
+     * `Stufe 4 (Stoßlüftung)`
+
+3. **Dropdown (Input Select) - [AKTUELL NUR VORBEREITUNG FÜR UPGRADES]:**
    * **Name:** `KWL Bypass Modus`
    * **Entitäts-ID:** `input_select.kwl_bypass_modus`
    * **Optionen (Exakte Schreibweise!):**
@@ -42,11 +60,14 @@ Bevor du die YAML-Dateien einspielst, müssen in Home Assistant über die Benutz
      * `Zwangsschaltung (Bypass AUF)`
      * `Zwangsschaltung (Bypass ZU)`
      * `Sommerbetrieb (HA-Kühlen)`
+   * *Hinweis:* Dieser Helfer ist für zukünftige Automations-Updates vorbereitet und im aktuellen Basis-Release noch ohne Funktion.
 
-2. **Nummer (Input Number):** *(Für die spätere Erweiterung der Wunschtemperatur)*
+4. **Nummer (Input Number) - [AKTUELL NUR VORBEREITUNG FÜR UPGRADES]:**
    * **Name:** `KWL Vorgabetemperatur`
    * **Entitäts-ID:** `input_number.kwl_vorgabetemperatur`
    * **Bereich:** `10` bis `40` (Schrittgröße: `1`)
+   * *Hinweis:* Für spätere Erweiterungen der Wunschtemperatur-Fälschung reserviert.
+
 
 ### 3. Integration in die `configuration.yaml`
 Kopiere die Sensor-Abfragen und die `shell_command`-Befehle aus der Beispiel-Datei `configuration.yaml` dieses Repositories in deine eigene Konfiguration. Passe dort ggf. die IP-Adresse (`192.168.1.199`) an deine KWL an.
