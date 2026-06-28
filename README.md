@@ -2,6 +2,8 @@
 
 Eine Smart-Home-Erweiterung für die Lüftungsanlage **Helios KWL EC 300W (Firmware V2.x)** zur Integration in **Home Assistant**.
 
+Dieses projekt ist noch in der Weiterentwicklung.
+
 Dieses Projekt entsteht durch stundenlange, intensive Entwicklungs- und Testarbeit durch mich, einem erfahrenen Heizungs- und Lüftungsbaumeister und KI Unterstützung.
 Es umgeht die Werkslogik des Herstellers (Helios) und ermöglicht direkten Zugriff auf alle grundlegende Funktionen die über Parameter erreichbar sind.
 Zum Beispiel die Kontrolle über den Sommer-/Winter-Bypass oder auch externe Erweiterungsmodule wie das EM-Modul mit T6-Heizregisterfühler.
