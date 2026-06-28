@@ -1,60 +1,103 @@
-- id: kwl_bypass_dreisprung_steuerung
-  alias: "KWL: Bypass Master-Steuerung"
+# AUTOMATION 1: Der direkte Klick auf die Lüfterstufe im Dashboard
+- id: kwl_direkt_stufe
+  alias: "KWL: Direkt-Klick Lüfterstufe"
   trigger:
     - platform: state
-      entity_id: input_select.kwl_bypass_modus
-    - platform: time_pattern
-      minutes: "/5"
+      entity_id: input_select.kwl_luefterstufe_auswahl
+  condition:
+    - condition: state
+      entity_id: input_select.kwl_globaler_modus
+      state: "HA übernimmt die Macht (Hand)"
   action:
     - choose:
-        # 1. HELIOS-WERKSAUTOMATIK (Soll-Temperatur fest auf 23°C)
         - conditions:
             - condition: state
-              entity_id: input_select.kwl_bypass_modus
-              state: "Werkseinstellung (Helios-Auto)"
+              entity_id: input_select.kwl_luefterstufe_auswahl
+              state: "Stufe 1 (Minimal)"
           sequence:
-            - action: shell_command.kwl_bypass_auto
+            - action: shell_command.kwl_luefterstufe_schalten
+              data:
+                stufe: 1
+        - conditions:
+            - condition: state
+              entity_id: input_select.kwl_luefterstufe_auswahl
+              state: "Stufe 2 (Normal)"
+          sequence:
+            - action: shell_command.kwl_luefterstufe_schalten
+              data:
+                stufe: 2
+        - conditions:
+            - condition: state
+              entity_id: input_select.kwl_luefterstufe_auswahl
+              state: "Stufe 3 (Erhöht)"
+          sequence:
+            - action: shell_command.kwl_luefterstufe_schalten
+              data:
+                stufe: 3
+        - conditions:
+            - condition: state
+              entity_id: input_select.kwl_luefterstufe_auswahl
+              state: "Stufe 4 (Stoßlüftung)"
+          sequence:
+            - action: shell_command.kwl_luefterstufe_schalten
+              data:
+                stufe: 4
 
-        # 2. WINTERBETRIEB (Im Winter wollen wir WÄRME halten -> Klappe muss ZU = 40)
+# AUTOMATION 2: Die Master-Weiche (Schaltet bei Handbetrieb sofort die Stufe durch)
+- id: kwl_direkt_macht_weiche
+  alias: "KWL: Direkt-Klick Globale Kontrolle"
+  trigger:
+    - platform: state
+      entity_id: input_select.kwl_globaler_modus
+  action:
+    - choose:
+        # FALL 1: Zurück auf Auto -> Übergibt die Kontrolle komplett an das Gerät
         - conditions:
             - condition: state
-              entity_id: input_select.kwl_bypass_modus
-              state: "Winterbetrieb (HA-Heizen)"
+              entity_id: input_select.kwl_globaler_modus
+              state: "Gerät entscheidet alles (Auto)"
           sequence:
-            - action: shell_command.kwl_bypass_zu
-
-        # 3. ZWANGSSCHALTUNG AUF (Manueller Test -> Klappe auf = 10)
+            - action: shell_command.kwl_lueftung_auto
+        
+        # FALL 2: HA übernimmt die Macht -> Handmodus an und gewählte Stufe SOFORT aktivieren!
         - conditions:
             - condition: state
-              entity_id: input_select.kwl_bypass_modus
-              state: "Zwangsschaltung (Bypass AUF)"
+              entity_id: input_select.kwl_globaler_modus
+              state: "HA übernimmt die Macht (Hand)"
           sequence:
-            - action: shell_command.kwl_bypass_auf
-
-        # 4. ZWANGSSCHALTUNG ZU (Manueller Test -> Klappe zu = 40)
-        - conditions:
-            - condition: state
-              entity_id: input_select.kwl_bypass_modus
-              state: "Zwangsschaltung (Bypass ZU)"
-          sequence:
-            - action: shell_command.kwl_bypass_zu
-
-        # 5. SOMMERBETRIEB (Hier entscheidet die Temperatur-Logik!)
-        - conditions:
-            - condition: state
-              entity_id: input_select.kwl_bypass_modus
-              state: "Sommerbetrieb (HA-Kühlen)"
-          sequence:
+            - action: shell_command.kwl_lueftung_manuell
+            - delay: "00:00:02"
+            # Drückt exakt die Stufe rein, die gerade aktiv auf dem Dashboard steht
             - choose:
-                # NUR öffnen (10), wenn es draußen wirklich z.b. 1 Grad (innen - 1.0) kälter ist als drinnen!
                 - conditions:
-                    - condition: template
-                      value_template: >-
-                        {% set aussen = states('sensor.helios_aussenluft_t1') | float(0) %}
-                        {% set innen = states('sensor.helios_abluft_t3') | float(0) %}
-                        {{ aussen <= (innen - 1.0) }}
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 1 (Minimal)"
                   sequence:
-                    - action: shell_command.kwl_bypass_auf
-              # Wenn es draußen ZU HEISS ist: Klappe ZU (40), um die Hitze auszusperren!
-              default:
-                - action: shell_command.kwl_bypass_zu
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data:
+                        stufe: 1
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 2 (Normal)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data:
+                        stufe: 2
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 3 (Erhöht)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data:
+                        stufe: 3
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 4 (Stoßlüftung)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data:
+                        stufe: 4
