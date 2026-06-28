@@ -1,4 +1,6 @@
+
 automation: !include automations.yaml
+
 
 command_line:
   - sensor:
@@ -18,7 +20,39 @@ command_line:
         {% endif %}
       scan_interval: 30
 
+# FIX: Die drei Dropdowns werden sauber angelegt
+input_select:
+  kwl_globaler_modus:
+    name: "KWL Globale Kontrolle"
+    options:
+      - "Gerät entscheidet alles (Auto)"
+      - "HA übernimmt die Macht (Hand)"
+
+  kwl_bypass_modus:
+    name: "KWL Bypass Modus"
+    options:
+      - "Zwangsschaltung (Bypass AUF)"
+      - "Zwangsschaltung (Bypass ZU)"
+      - "Bypass AUTOMATIK"
+
+  kwl_luefterstufe_auswahl:
+    name: "Manuelle Lüfterstufe"
+    options:
+      - "Stufe 1 (Minimal)"
+      - "Stufe 2 (Normal)"
+      - "Stufe 3 (Erhöht)"
+      - "Stufe 4 (Stoßlüftung)"
+
 shell_command:
-  kwl_bypass_auto: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=23"
+  # Klappen-Tricks (Zurück auf die erfolgreichen Temperatur-Fälschungen an v01035!)
   kwl_bypass_auf: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=10"
   kwl_bypass_zu: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=40"
+  kwl_bypass_auto: "python3 /config/helios_modbus.py 192.168.1.199 8 v01035=23"
+
+  # FIX: Handbetrieb schaltet jetzt sauber auf v00101=1 um, damit v00102 dauerhaft zieht!
+  kwl_lueftung_auto: "python3 /config/helios_modbus.py 192.168.1.199 8 v00101=0"
+  kwl_lueftung_manuell: "python3 /config/helios_modbus.py 192.168.1.199 8 v00101=1"
+
+  # Schaltet stur die echten, unfehlbaren Luefterstufen (1 bis 4) an v00102
+  kwl_luefterstufe_schalten: "python3 /config/helios_modbus.py 192.168.1.199 8 v00102={{ stufe }}"
+
