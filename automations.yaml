@@ -18,7 +18,7 @@
           {% else %} 4
           {% endif %}
 
-# AUTOMATION 2: Der direkte Klick auf den Bypass-Modus im Dashboard (FIXED!)
+# AUTOMATION 2: Der direkte Klick auf den Bypass-Modus im Dashboard
 - id: kwl_direkt_bypass
   alias: "KWL: Direkt-Klick Bypass"
   trigger:
@@ -36,21 +36,21 @@
               state: "Zwangsschaltung (Bypass AUF)"
           sequence:
             - action: shell_command.kwl_bypass_auf
-              data: { wert: "10" }
+              data: { wert: 10 }
         - conditions:
             - condition: state
               entity_id: input_select.kwl_bypass_modus
               state: "Zwangsschaltung (Bypass ZU)"
           sequence:
             - action: shell_command.kwl_bypass_zu
-              data: { wert: "40" }
+              data: { wert: 40 }
         - conditions:
             - condition: state
               entity_id: input_select.kwl_bypass_modus
               state: "Bypass AUTOMATIK"
           sequence:
             - action: shell_command.kwl_bypass_auto
-              data: { wert: "23" }
+              data: { wert: 23 }
 
 # AUTOMATION 3: Die Master-Weiche (Schaltet bei Handbetrieb sofort alles getaktet durch)
 - id: kwl_direkt_macht_weiche
@@ -60,28 +60,58 @@
       entity_id: input_select.kwl_globaler_modus
   action:
     - choose:
-        # FALL 1: Zurück auf Auto -> Übergibt die Kontrolle komplett an das Gerät
+        # FALL 1: Zurück auf Auto -> Erst Klappe vorsorglich ZU (40 Grad), dann Kontrolle an das Gerät!
         - conditions:
             - condition: template
               value_template: "{{ trigger.to_state.state == 'Gerät entscheidet alles (Auto)' }}"
           sequence:
+            # FIX: Reines Zahlenformat ohne blockierende Anführungszeichen!
+            - action: shell_command.kwl_bypass_zu
+              data: { wert: 40 }
+            - delay: "00:00:02"
             - action: shell_command.kwl_lueftung_auto
+            - delay: "00:00:01"
+            - action: input_select.select_option
+              target:
+                entity_id: input_select.kwl_bypass_modus
+              data: { option: "Bypass AUTOMATIK" }
         
-        # FALL 2: HA übernimmt die Macht -> Handmodus an und gewählte Stufen/Klappe SOFORT aktivieren!
+        # FALL 2: HA übernimmt die Macht -> Handmodus an und gewählte Stufe SOFORT aktivieren!
         - conditions:
             - condition: template
               value_template: "{{ trigger.to_state.state == 'HA übernimmt die Macht (Hand)' }}"
           sequence:
             - action: shell_command.kwl_lueftung_manuell
             - delay: "00:00:02"
-            - action: shell_command.kwl_luefterstufe_schalten
-              data:
-                stufe: >-
-                  {% if is_state('input_select.kwl_luefterstufe_auswahl', 'Stufe 1 (Minimal)') %} 1
-                  {% elif is_state('input_select.kwl_luefterstufe_auswahl', 'Stufe 2 (Normal)') %} 2
-                  {% elif is_state('input_select.kwl_luefterstufe_auswahl', 'Stufe 3 (Erhöht)') %} 3
-                  {% else %} 4
-                  {% endif %}
+            - choose:
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 1 (Minimal)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data: { stufe: 1 }
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 2 (Normal)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data: { stufe: 2 }
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 3 (Erhöht)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data: { stufe: 3 }
+                - conditions:
+                    - condition: state
+                      entity_id: input_select.kwl_luefterstufe_auswahl
+                      state: "Stufe 4 (Stoßlüftung)"
+                  sequence:
+                    - action: shell_command.kwl_luefterstufe_schalten
+                      data: { stufe: 4 }
             - delay: "00:00:02"
             - choose:
                 - conditions:
@@ -90,18 +120,18 @@
                       state: "Zwangsschaltung (Bypass AUF)"
                   sequence:
                     - action: shell_command.kwl_bypass_auf
-                      data: { wert: "10" }
+                      data: { wert: 10 }
                 - conditions:
                     - condition: state
                       entity_id: input_select.kwl_bypass_modus
                       state: "Zwangsschaltung (Bypass ZU)"
                   sequence:
                     - action: shell_command.kwl_bypass_zu
-                      data: { wert: "40" }
+                      data: { wert: 40 }
                 - conditions:
                     - condition: state
                       entity_id: input_select.kwl_bypass_modus
                       state: "Bypass AUTOMATIK"
                   sequence:
                     - action: shell_command.kwl_bypass_auto
-                      data: { wert: "23" }
+                      data: { wert: 23 }
