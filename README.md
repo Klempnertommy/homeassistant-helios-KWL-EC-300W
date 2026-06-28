@@ -9,7 +9,7 @@ Zum Beispiel die Kontrolle über den Sommer-/Winter-Bypass oder auch externe Erw
 ---
 
 ## ⚠️ HAFTUNGSAUSSCHLUSS (Disclaimer)
-**Nutzung auf eigene Gefahr!** Dies ist ein privates Open-Source-Projekt. Der Entwickler übernimmt keinerlei Haftung für Schäden an der Lüftungsanlage, der Elektronik, dem Gebäude oder für Folgeschäden (z. B. durch falsche Kondensatbildung oder fehlerhafte Registerwerte). Das Projekt wird "wie besehen" bereitgestellt. Jede Modifikation an einer 4.000€-Anlage geschieht in vollkommener Eigenverantwortung des Nutzers.
+**Nutzung auf eigene Gefahr!** Dies ist ein privates Open-Source-Projekt. Der Entwickler übernimmt keinerlei Haftung für Schäden an der Lüftungsanlage, der Elektronik, dem Gebäude oder für Folgeschäden (z. B. durch falsche Kondensatbildung oder fehlerhafte Registerwerte). Das Projekt wird "wie besehen" bereitgestellt. Alle Handlungen liegen in vollkommener Eigenverantwortung des Nutzers.
 
 ---
 
