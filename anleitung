@@ -1,0 +1,24 @@
+Installation HA PI
+
+pip3 install pymodbus --break-system-packages
+
+cd /config
+
+nano helios_modbus.py
+
+Datei erstellen ud speichern
+
+Homeassistant die beiden Yaml Dateien ersprechend integrieren
+und für das Dash zum Bedienen z.b. folgende Entitäten-Karte bauen:
+
+type: entities
+title: KWL Lüftungs-Zentrale
+entities:
+  - entity: input_select.kwl_globaler_modus
+    name: Globale Kontrolle
+  - type: divider
+  - entity: input_select.kwl_bypass_modus
+    name: Bypass-Klappe Modus
+  - entity: input_select.kwl_luefterstufe_auswahl
+    name: Manuelle Lüfterstufe
+
