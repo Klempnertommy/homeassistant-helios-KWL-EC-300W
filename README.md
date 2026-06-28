@@ -1,9 +1,10 @@
 # homeassistant-helios-KWL-EC-300W
 
-Eine maßgeschneiderte Smart-Home-Erweiterung für die Lüftungsanlage **Helios KWL EC 300W (Firmware V2.x)** zur nahtlosen Integration in **Home Assistant**.
+Eine Smart-Home-Erweiterung für die Lüftungsanlage **Helios KWL EC 300W (Firmware V2.x)** zur Integration in **Home Assistant**.
 
-Dieses Projekt entstand in stundenlanger, intensiver Entwicklungs- und Testarbeit durch mich, einem erfahrenen Heizungs- und Lüftungsbaumeister und hilfreicher KI Unterstützung.
-Es hebelt die träge, fehlerhafte Werkslogik des Herstellers aus und ermöglicht die uneingeschränkte, automatisierte Kontrolle über den Sommer-/Winter-Bypass sowie externe Erweiterungsmodule (z. B. EM-Modul mit T6-Heizregisterfühler).
+Dieses Projekt entsteht durch stundenlange, intensive Entwicklungs- und Testarbeit durch mich, einem erfahrenen Heizungs- und Lüftungsbaumeister und KI Unterstützung.
+Es umgeht die Werkslogik des Herstellers (Helios) und ermöglicht direkten Zugriff auf alle grundlegende Funktionen die über Parameter erreichbar sind.
+Zum Beispiel die Kontrolle über den Sommer-/Winter-Bypass oder auch externe Erweiterungsmodule wie das EM-Modul mit T6-Heizregisterfühler.
 
 ---
 
@@ -12,12 +13,9 @@ Es hebelt die träge, fehlerhafte Werkslogik des Herstellers aus und ermöglicht
 
 ---
 
-## 🚀 Features
-* **Bypass-Direktsteuerung:** Zuverlässiges Öffnen und Schließen der Klappe über das Register `v01035` – komplett ohne die berüchtigten Firmware-Hysteresen und RAM-Sperren.
-* **Intelligente Sommer-Kühlung:** Home Assistant steuert die Anlage dynamisch. Es holt nachts automatisch kühle Luft ins Haus und schaltet tagsüber auf Hitzeschutz (Kälterückgewinnung).
-* **Automatischer Lüfter-Boost:** Kopplung von Klappe und Ventilatoren (z. B. automatisches Hochregeln auf Stufe 3 bei aktiver Nachtkühlung, bis die Wunschtemperatur erreicht ist).
+## 🚀 Features aktuell
+* **Bypass-Direktsteuerung:** Zuverlässiges Öffnen und Schließen der Klappe über das Register `v01035`.
 * **EM-Modul Integration:** Vollständiges Auslesen des T6-Temperaturfühlers nach dem Heizregister.
-* **Der "Soft-Reset-Trick":** Dokumentierter Weg, um festgefahrene Helios-Firmware ohne den Gang zum Sicherungskasten per Software direkt im Webinterface freizumachen.
 
 ---
 
@@ -53,14 +51,6 @@ Kopiere die Sensor-Abfragen und die `shell_command`-Befehle aus der Beispiel-Dat
 
 ### 4. Integration in die `automations.yaml`
 Kopiere die Steuerungs-Automation aus der `automations.yaml` dieses Repositories in dein Home Assistant. Diese Automation triggert bei jedem Umschalten des Dashboard-Helfers sowie im automatischen 5-Minuten-Takt, um die Temperaturen abzugleichen.
-
----
-
-## 💡 Der Klempnertommy "Soft-Reset-Trick"
-Falls sich die Firmware der Helios bei der wilden Testerei oder durch widersprüchliche Befehle im RAM "verknotet" hat und weder auf HA noch auf Klicks im eigenen Webinterface reagiert (Werte frieren starr ein):
-* Navigiere im Helios-Webinterface zur **Passiven Außenluftkühlung**.
-* Deaktiviere die Funktion kurzzeitig komplett und aktiviere sie danach wieder.
-* **Effekt:** Das Bypass-Subsystem wird auf der Platine augenblicklich stromlos geschaltet und der blockierte RAM-Speicher gelöscht. Die sture Anti-Pendel-Sperre ist sofort aufgehoben, ohne dass man die Sicherung im Haus herausdrehen muss!
 
 ---
 
