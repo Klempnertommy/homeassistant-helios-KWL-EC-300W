@@ -16,9 +16,8 @@ def main(ip, variable, rtr):
         log = logging.getLogger()
         log.setLevel(logging.ERROR)
 
-        rtr = rtr + 3
-        if rtr < 8:
-            rtr = 8
+        # Großzügiger Puffer von 15 Registern, um die KWL-Antwort sicher einzufangen
+        rtr_to_read = 15
 
         client = ModbusClient(host=ip, port=502)
         if not client.connect():
@@ -29,7 +28,6 @@ def main(ip, variable, rtr):
         if len(send_string) % 2 != 0:
             send_string += b'\x00'
 
-        # Verpackt den Text mathematisch korrekt fuer das Helios-Register
         payload = []
         for i in range(0, len(send_string), 2):
             register_value = struct.unpack('>H', send_string[i:i+2])[0]
@@ -37,30 +35,46 @@ def main(ip, variable, rtr):
 
         # Telegramm an die KWL senden
         client.write_registers(address=FIRST_REGISTER_ADDR, values=payload, device_id=SLAVE_ID)
-        
-        # WENN EIN BEFEHL GESCHRIEBEN WIRD (z.B. v00084=1)
+
+        # WENN EIN BEFEHL GESCHRIEBEN WIRD (z.B. v01035=10)
         if '=' in variable:
             time.sleep(0.1)
             return
 
-        # WENN GELESEN WIRD (z.B. Fühlerabfrage)
-        # Wir geben der KWL in einer Schleife kurz Zeit, die Antwort ins Register zu schreiben
+        # WENN GELESEN WIRD
+        search_key = variable.strip()
+
         for _ in range(5):
             time.sleep(0.1)
-            result = client.read_holding_registers(address=FIRST_REGISTER_ADDR, count=rtr, device_id=SLAVE_ID)
+            result = client.read_holding_registers(address=FIRST_REGISTER_ADDR, count=rtr_to_read, device_id=SLAVE_ID)
 
             if not result.isError() and result.registers:
+                # 1. VERSUCH: Als ASCII-Text dekodieren (für normale Variablen)
                 response_bytes = bytearray()
                 for reg in result.registers:
                     response_bytes.extend(struct.pack('>H', reg))
 
                 output = response_bytes.decode('ascii', errors='ignore')
-                output = re.sub(r'[\x00-\x1F\x7F]', "", output)
+                clean_output = re.sub(r'[\x00-\x1F\x7F]', "", output)
 
-                # Nur ausgeben, wenn das Postfach nicht leer ist
-                if output.strip():
-                    print(output)
+                match = re.search(r'(' + re.escape(search_key) + r'=[^\s&]+)', clean_output)
+                if match:
+                    print(match.group(1))
                     return
+
+                # 2. VERSUCH: Direkte Rohdaten-Ausgabe für char[2]-Variablen mit Size 5
+                # Wir geben einfach die ersten nützlichen Register als nackte Zahlen aus!
+                if len(result.registers) > 1:
+                    # Helios legt den echten Integer-Wert bei diesen Registern oft versetzt ab
+                    val1 = result.registers[0]
+                    val2 = result.registers[1]
+
+                    if 0 <= val1 <= 10000:
+                        print(f"{search_key}={val1}")
+                        return
+                    elif 0 <= val2 <= 10000:
+                        print(f"{search_key}={val2}")
+                        return
 
     except Exception as e:
         pass
@@ -76,3 +90,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args.ip, args.variable, args.registers)
+
+
